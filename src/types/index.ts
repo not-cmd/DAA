@@ -1,10 +1,11 @@
 
+
 export interface SimulationStep {
   // Common
   action?: string;
   description?: string;
 
-  // Array-based (Merge Sort, Quick Sort)
+  // Array-based (Merge Sort, Quick Sort, Max-Min, ControlStructures)
   array?: (number | string)[];
   merged?: (number | string)[];
   highlight?: number[];
@@ -14,6 +15,18 @@ export interface SimulationStep {
   less?: (number | string)[];
   greater?: (number | string)[];
   equal?: (number | string)[];
+  current_array_item?: number | string | null; // For ControlStructures
+  output?: string; // For ControlStructures
+  odd_count?: number; // For ControlStructures example
+  final_odd_count?: number; // For ControlStructures example
+  array_segment?: (number | string)[]; // Max-Min
+  left_segment?: (number | string)[]; // Max-Min
+  right_segment?: (number | string)[]; // Max-Min
+  max_val?: number | string; // Max-Min
+  min_val?: number | string; // Max-Min
+  final_max?: number | string; // Max-Min
+  final_min?: number | string; // Max-Min
+
 
   // Knapsack (Fractional, 0/1)
   item_index?: number;
@@ -37,6 +50,7 @@ export interface SimulationStep {
   col?: number;
   value?: number | string;
   cell_coords?: [number, number]; // For highlighting current cell
+  dp_table?: (number | string)[][]; // For showing full table in a step
 
   // N-Queens
   board_state?: (number | string)[][]; // 0 for empty, 1 or 'Q' for queen
@@ -68,46 +82,64 @@ export interface SimulationStep {
   root_matrix_cell?: { i: number; j: number; value: number };
   sub_problem?: { i: number; j: number; k_min: number; cost: number };
   current_tree_structure?: any; // Simplified tree structure
+  optimal_cost?: number;
+
+  // Strassen's Matrix Multiplication
+  matrix_a?: number[][];
+  matrix_b?: number[][];
+  sub_matrix_id?: string; // e.g., A11, P1
+  operation?: string; // e.g., "A11 + A22", "M1 * M2"
+  result_matrix?: number[][];
 }
 
 
 export interface SimulationData {
   // Common
-  type: 'MergeSort' | 'QuickSort' | 'FractionalKnapsack' | 'Dijkstra' | 'ZeroOneKnapsack' | 'LCS' | 'NQueens' | 'SubsetSum' | 'KMP' | 'RabinKarp' | 'OptimalBST';
+  type: 'MergeSort' | 'QuickSort' | 'FractionalKnapsack' | 'Dijkstra' | 'ZeroOneKnapsack' | 'LCS' | 'NQueens' | 'SubsetSum' | 'KMP' | 'RabinKarp' | 'OptimalBST' | 'ControlStructures' | 'MaxMin' | 'Strassen' | 'ActivitySelection' | 'JobSequencing' | 'CoinChangeGreedy' | 'HuffmanCoding' | 'Kruskal' | 'Prim' | 'Fibonacci' | 'CoinChangeDP' | 'MatrixChainMultiplication' | 'TSP' | 'FloydWarshall' | 'BellmanFord' | 'GraphColoring' | 'HamiltonianCycle' | 'FifteenPuzzle' | 'ZeroOneKnapsackBB' | 'TSPBB' | 'JobSequencingBB' | 'NaiveStringMatching' | 'FiniteAutomataStringMatching' | 'RecurrenceRelations' | 'AlgorithmAnalysis' | 'Generic';
   steps: SimulationStep[];
 
   // Specific initial data
-  initial_array?: (number | string)[]; // MergeSort, QuickSort
+  initial_array?: (number | string)[]; // MergeSort, QuickSort, MaxMin, ControlStructures
   pivot_strategy?: 'first' | 'last'; // QuickSort
   capacity?: number; // Knapsack
-  items?: { value: number; weight: number; ratio?: number; name?: string }[]; // Knapsack
+  items?: { value: number; weight: number; ratio?: number; name?: string; deadline?: number; profit?: number; char?: string; freq?: number; }[]; // Knapsack, JobSequencing, HuffmanCoding
   order?: string; // FractionalKnapsack (e.g., "value_per_weight")
-  graph?: Record<string, [string, number][]>; // Dijkstra
-  nodes?: string[]; // Dijkstra
-  start_node?: string; // Dijkstra
+  graph?: Record<string, [string, number][]>; // Dijkstra, Kruskal, Prim, BellmanFord, FloydWarshall
+  nodes?: string[]; // Dijkstra, Kruskal, Prim
+  start_node?: string; // Dijkstra, BellmanFord
   end_node?: string; // Dijkstra (optional)
   dp_table_dimensions?: { rows: number; cols: number }; // 0/1 Knapsack, LCS
   string1?: string; // LCS
   string2?: string; // LCS
   board_size?: number; // N-Queens
+  num_colors?: number; // GraphColoring
   set?: number[]; // Subset Sum
   target_sum?: number; // Subset Sum
-  text?: string; // KMP, Rabin-Karp
-  pattern?: string; // KMP, Rabin-Karp
+  text?: string; // KMP, Rabin-Karp, Naive, FiniteAutomata
+  pattern?: string; // KMP, Rabin-Karp, Naive, FiniteAutomata
   lps_array?: number[]; // KMP
   hash_function_description?: string; // Rabin-Karp
   keys?: number[]; // OptimalBST
   probabilities?: number[]; // OptimalBST
   initial_dp_table?: (number | string)[][]; // For 0/1 Knapsack and LCS to show initial state
+  matrix_a?: number[][]; // Strassen
+  matrix_b?: number[][]; // Strassen
+  num_jobs?: number; // Job Sequencing
+  job_profits?: number[]; // Job Sequencing
+  job_deadlines?: number[]; // Job Sequencing
+  coins?: number[]; // CoinChange
+  amount?: number; // CoinChange
+  matrices_dimensions?: number[]; // MatrixChainMultiplication
+  num_nodes?: number; // TSP
+  cost_matrix?: number[][]; // TSP, Assignment Problem (related to Branch&Bound)
+  initial_board?: number[][]; // 15-Puzzle
+  goal_board?: number[][]; // 15-Puzzle
 }
 
 export interface SampleQuestion {
   id: string;
   question: string;
   simulation_data: SimulationData;
-  brief_explanation?: string;
-  pseudocode?: string;
-  python_code?: string;
   solution_steps?: string[]; // Textual explanation for each step
 }
 
@@ -118,6 +150,10 @@ export interface SubTopic {
   brief_explanation?: string;
   pseudocode?: string;
   python_code?: string;
+  time_complexity?: string;
+  space_complexity?: string;
+  advantages?: string;
+  disadvantages?: string;
 }
 
 export interface Topic {
@@ -128,3 +164,4 @@ export interface Topic {
 }
 
 export type AlgorithmData = Topic[];
+```
