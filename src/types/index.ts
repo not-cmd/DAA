@@ -32,27 +32,37 @@ export interface SimulationStep {
 
   // Knapsack (Fractional, 0/1)
   item_index?: number;
-  item?: { value: number; weight: number; ratio?: number; name?: string };
+  item?: { value: number; weight: number; ratio?: number; name?: string; deadline?: number; profit?: number; char?: string; freq?: number; start_time?: number; finish_time?:number; id?: string; }; // Added more fields for various items
   fraction?: number;
   current_weight?: number;
   current_value?: number;
   dp_row?: number[]; // for 0/1 Knapsack table row
 
-  // Graph (Dijkstra)
+  // Graph (Dijkstra, Kruskal, Prim, BellmanFord, FloydWarshall, TSP, Hamiltonian, GraphColoring)
   current_node?: string;
   distances?: Record<string, number | string>; // Infinity can be string
   visited_nodes?: string[];
-  path?: string[];
+  path?: string[]; // For Hamiltonian, TSP BB path
   updated_distance_for?: string;
   new_distance?: number;
-  edge_considered?: [string, string, number];
-
-  // DP Table (LCS, 0/1 Knapsack)
+  edge_considered?: [string, string, number] | {from: string, to: string, weight: number}; // Allow object for MST edges
+  mst_edges?: { from: string; to: string; weight: number }[]; // For Prim/Kruskal final MST
+  total_mst_cost?: number; // For Prim/Kruskal
+  final_distances?: Record<string, number | string>; // For Dijkstra/BellmanFord final
+  negative_cycle_detected?: boolean; // For BellmanFord
+  final_coloring?: Record<string, number | string>; // For Graph Coloring
+  hamiltonian_cycle_path?: string[]; // For Hamiltonian Cycle
+  tsp_tour?: string[]; // For TSP DP/BB
+  tsp_tour_cost?: number; // For TSP DP/BB
+  
+  // DP Table (LCS, 0/1 Knapsack, FloydWarshall, OptimalBST)
   row?: number;
   col?: number;
   value?: number | string;
   cell_coords?: [number, number]; // For highlighting current cell
-  dp_table?: (number | string)[][]; // For showing full table in a step
+  dp_table?: (number | string | {value: any, highlight?: boolean, type?: string, arrowFrom?: string[]})[][]; // For showing full table in a step, made cell more generic
+  lcs_reconstruction_path?: {row: number, col: number}[]; // Path for LCS reconstruction highlight
+  final_lcs_string?: string; // The final LCS string
 
   // N-Queens
   board_state?: (number | string)[][]; // 0 for empty, 1 or 'Q' for queen
@@ -66,7 +76,7 @@ export interface SimulationStep {
   item_considered?: number;
   included?: boolean; // true if item_considered is included
 
-  // String Matching (KMP, Rabin-Karp)
+  // String Matching (KMP, Rabin-Karp, Finite Automata)
   text_pointer?: number;
   pattern_pointer?: number;
   comparison_result?: 'match' | 'mismatch';
@@ -77,6 +87,8 @@ export interface SimulationStep {
   text_hash?: number | string;
   pattern_hash?: number | string;
   spurious_hit?: boolean;
+  automaton_path?: string; // Sequence of states in FA
+  current_fa_state?: number | string; // For FA
 
   // Optimal BST
   stage?: string; // e.g., "initial", "length_1", "final"
@@ -92,6 +104,41 @@ export interface SimulationStep {
   sub_matrix_id?: string; // e.g., A11, P1
   operation?: string; // e.g., "A11 + A22", "M1 * M2"
   result_matrix?: number[][];
+
+  // Fibonacci
+  fib_n?: number;
+  fib_val?: number;
+  dp_table_fib?: (number | string)[]; // For Fibonacci tabulation
+
+  // Coin Change Greedy
+  coins_used?: number[];
+  total_coins?: number;
+  remaining_amount?: number;
+
+  // Huffman Coding
+  huffman_codes?: Record<string, string>;
+  huffman_tree_description?: string; // Textual description of tree construction
+
+  // Matrix Chain Multiplication
+  optimal_parenthesization?: string;
+  min_multiplications?: number;
+
+  // 15-Puzzle (Branch and Bound)
+  puzzle_board_state?: (number | string)[][];
+  puzzle_path?: string[]; // Sequence of moves
+  puzzle_cost?: number;
+  puzzle_heuristic?: number;
+
+  // Branch and Bound Generic
+  bb_node_id?: string;
+  bb_profit?: number;
+  bb_weight?: number;
+  bb_upper_bound?: number;
+  bb_decision?: string; // e.g. "Include item X", "Exclude item Y"
+  bb_pruned?: boolean;
+  bb_solution_items?: any[]; // For 0/1 Knapsack BB
+  bb_max_profit?: number; // For Job Sequencing BB
+  bb_scheduled_jobs?: any[]; // For Job Sequencing BB
 }
 
 
@@ -107,7 +154,7 @@ export interface SimulationData {
   capacity?: number; // Knapsack
   items?: { value: number; weight: number; ratio?: number; name?: string; deadline?: number; profit?: number; char?: string; freq?: number; start_time?: number; finish_time?:number; id?: string; }[]; // Knapsack, JobSequencing, HuffmanCoding, ActivitySelection
   order?: string; // FractionalKnapsack (e.g., "value_per_weight")
-  graph?: Record<string, [string, number][]>; // Dijkstra, Kruskal, Prim, BellmanFord, FloydWarshall
+  graph?: Record<string, [string, number][]>; // Dijkstra, Kruskal, Prim, BellmanFord, FloydWarshall, TSP
   nodes?: string[]; // Dijkstra, Kruskal, Prim
   start_node?: string; // Dijkstra, BellmanFord
   end_node?: string; // Dijkstra (optional)
@@ -124,7 +171,7 @@ export interface SimulationData {
   hash_function_description?: string; // Rabin-Karp
   keys?: number[]; // OptimalBST
   probabilities?: number[]; // OptimalBST
-  initial_dp_table?: (number | string)[][]; // For 0/1 Knapsack and LCS to show initial state
+  initial_dp_table?: (number | string | {value: any})[][]; // For 0/1 Knapsack and LCS to show initial state, made cell more generic
   matrix_a?: number[][]; // Strassen
   matrix_b?: number[][]; // Strassen
   num_jobs?: number; // Job Sequencing
@@ -132,11 +179,13 @@ export interface SimulationData {
   job_deadlines?: number[]; // Job Sequencing
   coins?: number[]; // CoinChange
   amount?: number; // CoinChange
+  n_fibonacci?: number; // For Fibonacci
   matrices_dimensions?: number[]; // MatrixChainMultiplication
-  num_nodes?: number; // TSP
-  cost_matrix?: number[][]; // TSP, Assignment Problem (related to Branch&Bound)
-  initial_board?: number[][]; // 15-Puzzle
-  goal_board?: number[][]; // 15-Puzzle
+  num_nodes?: number; // TSP, HamiltonianCycle, GraphColoring
+  cost_matrix?: (number | string)[][]; // TSP, Assignment Problem (related to Branch&Bound), FloydWarshall
+  initial_board?: (number | string)[][]; // 15-Puzzle
+  goal_board?: (number | string)[][]; // 15-Puzzle
+  alphabet?: string[]; // For Finite Automata
 }
 
 export interface SampleQuestion {
@@ -167,3 +216,5 @@ export interface Topic {
 }
 
 export type AlgorithmData = Topic[];
+
+    
