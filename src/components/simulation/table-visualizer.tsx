@@ -57,8 +57,8 @@ export function TableVisualizer({
 
   return (
     <div className="overflow-x-auto p-2">
-      {title && <TableCaption className="text-lg font-semibold mb-2">{title}</TableCaption>}
       <Table className="min-w-full border-collapse border border-border shadow-md rounded-lg">
+        {title && <TableCaption className="text-lg font-semibold mb-2">{title}</TableCaption>}
         <TableHeader>
           <TableRow>
             <TableHead className="border border-border p-2 bg-muted w-16">
@@ -109,3 +109,4 @@ export function TableVisualizer({
     </div>
   );
 }
+
