@@ -85,18 +85,55 @@ export function SimulationArea({ simulationData, currentStep }: SimulationAreaPr
       case 'Dijkstra':
       case 'Kruskal': 
       case 'Prim': 
-      case 'BellmanFord': // Uses GraphVisualizer
-      case 'TSP': // Basic graph display for now
-      case 'FloydWarshall': // Basic graph display for now
-      case 'HamiltonianCycle': // Basic graph display
-      case 'GraphColoring': // Basic graph display
+      case 'BellmanFord': 
+      case 'TSP': 
+      case 'FloydWarshall': 
+      case 'HamiltonianCycle': 
+      case 'GraphColoring': {
+        let graphDataForVisualizer: Record<string, [string, number][]> = {};
+        
+        const determinedNodes: string[] = simulationData.nodes ||
+          (simulationData.num_nodes ? Array.from({ length: simulationData.num_nodes }, (_, i) => String(i)) :
+          (simulationData.graph && typeof simulationData.graph === 'object' && !Array.isArray(simulationData.graph) ? Object.keys(simulationData.graph) : []));
+
+        if (simulationData.type === 'HamiltonianCycle' && simulationData.graph && Array.isArray(simulationData.graph)) {
+          const adjMatrix = simulationData.graph as number[][];
+          adjMatrix.forEach((row, i) => {
+            const fromNodeStr = determinedNodes[i];
+            if (fromNodeStr) {
+              graphDataForVisualizer[fromNodeStr] = [];
+              row.forEach((isEdge, j) => {
+                const toNodeStr = determinedNodes[j];
+                if (isEdge === 1 && toNodeStr) { // Assuming 1 means edge
+                  graphDataForVisualizer[fromNodeStr].push([toNodeStr, 1]); // Default weight 1
+                }
+              });
+            }
+          });
+        } else if (simulationData.type === 'GraphColoring' && simulationData.graph && typeof simulationData.graph === 'object' && !Array.isArray(simulationData.graph)) {
+          const adjListSimple = simulationData.graph as Record<string, string[]>;
+          Object.entries(adjListSimple).forEach(([node, simpleNeighbors]) => {
+            if (determinedNodes.includes(node)) { // Ensure node is in determinedNodes
+                graphDataForVisualizer[node] = simpleNeighbors.map(neighbor => [neighbor, 1]); // Default weight 1
+            }
+          });
+        } else if (simulationData.graph && typeof simulationData.graph === 'object' && !Array.isArray(simulationData.graph)) {
+          // This handles Dijkstra, Kruskal, Prim if their graph data is already correct
+          // Also handles BellmanFord if its graph structure is Record<string, [string, number][]>
+          // For TSP, FloydWarshall, if graph is not provided, this will be empty which is fine (nodes only)
+           graphDataForVisualizer = simulationData.graph as Record<string, [string, number][]>;
+        }
+        // For TSP and FloydWarshall, if simulationData.graph is undefined, graphDataForVisualizer remains {} (nodes only)
+        // If they have cost_matrix and we want to display graph, transformation logic would be needed here.
+
         return <GraphVisualizer 
-                  graphData={simulationData.graph || {}} 
-                  nodes={simulationData.nodes || []}
+                  graphData={graphDataForVisualizer} 
+                  nodes={determinedNodes}
                   stepData={stepData} 
                   startNode={simulationData.start_node}
                   highlightedMstEdges={(simulationData.type === 'Kruskal' || simulationData.type === 'Prim') ? stepData.mst_edges : undefined}
                 />;
+      }
       case 'NQueens':
         return <BoardVisualizer 
                   boardSize={simulationData.board_size || 0} 
@@ -145,7 +182,7 @@ export function SimulationArea({ simulationData, currentStep }: SimulationAreaPr
                 )}
                 {simulationData.type === 'CoinChangeGreedy' && (
                     <>
-                        {stepData.item && <p>Considering coin: {stepData.item.value}</p>}
+                        {stepData.item && typeof stepData.item === 'object' && 'value' in stepData.item && <p>Considering coin: {stepData.item.value}</p>}
                         {stepData.remaining_amount !== undefined && <p>Remaining amount: {stepData.remaining_amount}</p>}
                         {stepData.coins_used && <p>Coins used so far: [{stepData.coins_used.join(', ')}]</p>}
                         {stepData.total_coins !== undefined && stepData.remaining_amount === 0 && <p className="font-semibold">Total coins: {stepData.total_coins}</p>}
@@ -218,5 +255,7 @@ export function SimulationArea({ simulationData, currentStep }: SimulationAreaPr
     </Card>
   );
 }
+
+    
 
     

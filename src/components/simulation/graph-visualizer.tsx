@@ -52,14 +52,28 @@ export function GraphVisualizer({ graphData, nodes: nodeIds, stepData, startNode
     const allEdges: { from: string; to: string; weight: number; id: string }[] = [];
     const addedEdges = new Set<string>(); // To avoid duplicate edges in undirected graphs
 
+    if (typeof graphData !== 'object' || graphData === null) {
+      console.warn("GraphVisualizer: graphData is not an object or is null.", graphData);
+      return allEdges;
+    }
+
     Object.entries(graphData).forEach(([fromNode, neighbors]) => {
-      neighbors.forEach(([toNode, weight]) => {
-        const edgeId1 = `${fromNode}-${toNode}`;
-        const edgeId2 = `${toNode}-${fromNode}`;
-        if (!addedEdges.has(edgeId1) && !addedEdges.has(edgeId2)) {
-          allEdges.push({ from: fromNode, to: toNode, weight, id: edgeId1 });
-          addedEdges.add(edgeId1);
-          addedEdges.add(edgeId2);
+      if (!Array.isArray(neighbors)) {
+        console.warn(`GraphVisualizer: Neighbors for node ${fromNode} is not an array.`, neighbors);
+        return; // Skip this node if neighbors is not an array
+      }
+      neighbors.forEach((neighborEntry) => {
+        if (Array.isArray(neighborEntry) && neighborEntry.length >= 2 && typeof neighborEntry[0] === 'string' && typeof neighborEntry[1] === 'number') {
+          const [toNode, weight] = neighborEntry as [string, number];
+          const edgeId1 = `${fromNode}-${toNode}`;
+          const edgeId2 = `${toNode}-${fromNode}`;
+          if (!addedEdges.has(edgeId1) && !addedEdges.has(edgeId2)) {
+            allEdges.push({ from: fromNode, to: toNode, weight, id: edgeId1 });
+            addedEdges.add(edgeId1);
+            addedEdges.add(edgeId2);
+          }
+        } else {
+            console.warn('GraphVisualizer: Malformed neighbor entry:', neighborEntry, 'for fromNode:', fromNode, 'Full graphData:', graphData);
         }
       });
     });
@@ -80,6 +94,7 @@ export function GraphVisualizer({ graphData, nodes: nodeIds, stepData, startNode
           if (!posFrom || !posTo) return null;
 
           const isConsideredEdge = edge_considered && 
+            Array.isArray(edge_considered) && // Ensure edge_considered is an array
             ((edge_considered[0] === edge.from && edge_considered[1] === edge.to) || 
              (edge_considered[0] === edge.to && edge_considered[1] === edge.from));
           
@@ -195,5 +210,7 @@ export function GraphVisualizer({ graphData, nodes: nodeIds, stepData, startNode
     </div>
   );
 }
+
+    
 
     
