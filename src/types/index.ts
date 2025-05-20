@@ -1,11 +1,10 @@
 
-
 export interface SimulationStep {
   // Common
   action?: string;
   description?: string;
 
-  // Array-based (Merge Sort, Quick Sort, Max-Min, ControlStructures)
+  // Array-based (Merge Sort, Quick Sort, Max-Min)
   array?: (number | string)[];
   merged?: (number | string)[];
   highlight?: number[];
@@ -15,17 +14,20 @@ export interface SimulationStep {
   less?: (number | string)[];
   greater?: (number | string)[];
   equal?: (number | string)[];
-  current_array_item?: number | string | null; // For ControlStructures
-  output?: string; // For ControlStructures
-  odd_count?: number; // For ControlStructures example
-  final_odd_count?: number; // For ControlStructures example
-  array_segment?: (number | string)[]; // Max-Min
-  left_segment?: (number | string)[]; // Max-Min
-  right_segment?: (number | string)[]; // Max-Min
-  max_val?: number | string; // Max-Min
-  min_val?: number | string; // Max-Min
-  final_max?: number | string; // Max-Min
-  final_min?: number | string; // Max-Min
+  
+  // ControlStructures specific
+  current_array_item?: number | string | null; 
+  output_log?: string[]; 
+  variable_states?: Record<string, string | number | boolean | null | undefined>;
+
+  // Max-Min specific
+  array_segment?: (number | string)[]; 
+  left_segment?: (number | string)[]; 
+  right_segment?: (number | string)[]; 
+  max_val?: number | string; 
+  min_val?: number | string; 
+  final_max?: number | string; 
+  final_min?: number | string; 
 
 
   // Knapsack (Fractional, 0/1)
@@ -100,9 +102,10 @@ export interface SimulationData {
 
   // Specific initial data
   initial_array?: (number | string)[]; // MergeSort, QuickSort, MaxMin, ControlStructures
+  initial_variables?: Record<string, string | number | boolean | null | undefined>; // For ControlStructures initial state
   pivot_strategy?: 'first' | 'last'; // QuickSort
   capacity?: number; // Knapsack
-  items?: { value: number; weight: number; ratio?: number; name?: string; deadline?: number; profit?: number; char?: string; freq?: number; }[]; // Knapsack, JobSequencing, HuffmanCoding
+  items?: { value: number; weight: number; ratio?: number; name?: string; deadline?: number; profit?: number; char?: string; freq?: number; start_time?: number; finish_time?:number; id?: string; }[]; // Knapsack, JobSequencing, HuffmanCoding, ActivitySelection
   order?: string; // FractionalKnapsack (e.g., "value_per_weight")
   graph?: Record<string, [string, number][]>; // Dijkstra, Kruskal, Prim, BellmanFord, FloydWarshall
   nodes?: string[]; // Dijkstra, Kruskal, Prim
@@ -164,4 +167,3 @@ export interface Topic {
 }
 
 export type AlgorithmData = Topic[];
-```

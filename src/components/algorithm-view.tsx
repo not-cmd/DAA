@@ -1,3 +1,4 @@
+
 // src/components/algorithm-view.tsx
 "use client";
 
@@ -86,13 +87,13 @@ export function AlgorithmView({ subTopic, selectedQuestion, topicId, subTopicId 
       <Card>
         <CardHeader>
           <CardTitle className="text-3xl">{subTopic.title}</CardTitle>
-          {subTopic.brief_explanation && <CardDescription>{subTopic.brief_explanation}</CardDescription>}
+          {subTopic.brief_explanation && <CardDescription className="mt-1">{subTopic.brief_explanation}</CardDescription>}
         </CardHeader>
       </Card>
 
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center mb-2">
             <CardTitle>Sample Question</CardTitle>
             {subTopic.sample_questions.length > 1 && (
                <Select value={selectedQuestion.id} onValueChange={handleQuestionChange}>
@@ -109,7 +110,7 @@ export function AlgorithmView({ subTopic, selectedQuestion, topicId, subTopicId 
               </Select>
             )}
           </div>
-          <p className="text-lg mt-2 p-4 bg-muted rounded-md shadow-inner min-h-[60px]">{currentQuestionText}</p>
+          <p className="text-lg p-4 bg-muted rounded-md shadow-inner min-h-[60px]">{currentQuestionText}</p>
         </CardHeader>
         <CardContent>
           <Button onClick={handleGenerateQuestion} disabled={isLoadingAI} variant="outline">
@@ -143,18 +144,61 @@ export function AlgorithmView({ subTopic, selectedQuestion, topicId, subTopicId 
             <RefreshCw className="h-4 w-4 mr-2" /> Reset
           </Button>
         </CardFooter>
-         {selectedQuestion.solution_steps && selectedQuestion.solution_steps[currentSimulationStep] && (
-            <div className="p-4 mt-4 border-t">
-              <h4 className="font-semibold mb-2">Explanation for this step:</h4>
-              <p className="text-sm text-muted-foreground">{selectedQuestion.solution_steps[currentSimulationStep]}</p>
-            </div>
-          )}
       </Card>
+      
+      {selectedQuestion.solution_steps && selectedQuestion.solution_steps[currentSimulationStep] && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">Explanation for Current Step</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-foreground leading-relaxed">{selectedQuestion.solution_steps[currentSimulationStep]}</p>
+            {currentStepDetails?.description && (
+                <p className="mt-2 text-xs text-muted-foreground italic">{currentStepDetails.description}</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <CodeDisplay
         pseudocode={subTopic.pseudocode || "Pseudocode not available."}
         pythonCode={subTopic.python_code || "Python code not available."}
       />
+
+      {(subTopic.time_complexity || subTopic.space_complexity) && (
+        <Card>
+          <CardHeader><CardTitle className="text-xl">Complexity Analysis</CardTitle></CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            {subTopic.time_complexity && <div><strong>Time Complexity:</strong> {subTopic.time_complexity}</div>}
+            {subTopic.space_complexity && <div><strong>Space Complexity:</strong> {subTopic.space_complexity}</div>}
+          </CardContent>
+        </Card>
+      )}
+
+      {(subTopic.advantages || subTopic.disadvantages) && (
+         <Card>
+          <CardHeader><CardTitle className="text-xl">Advantages & Disadvantages</CardTitle></CardHeader>
+          <CardContent className="space-y-4 text-sm">
+            {subTopic.advantages && (
+              <div>
+                <h4 className="font-semibold mb-1">Advantages:</h4>
+                <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                  {subTopic.advantages.split('. ').map((adv, idx) => adv.trim() && <li key={`adv-${idx}`}>{adv.trim()}</li>)}
+                </ul>
+              </div>
+            )}
+            {subTopic.disadvantages && (
+              <div>
+                <h4 className="font-semibold mb-1">Disadvantages:</h4>
+                 <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                  {subTopic.disadvantages.split('. ').map((dis, idx) => dis.trim() && <li key={`dis-${idx}`}>{dis.trim()}</li>)}
+                </ul>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
     </div>
   );
 }

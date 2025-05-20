@@ -1,3 +1,4 @@
+
 // src/components/layout/app-layout.tsx
 "use client";
 
@@ -84,7 +85,7 @@ function AppLayoutContent() {
           </SidebarContent>
         </ScrollArea>
       </Sidebar>
-      <SidebarInset className="flex flex-col">
+      <SidebarInset className="flex flex-col min-h-screen">
         <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 lg:h-[60px] lg:px-6">
           <SidebarTrigger className="md:hidden" />
           <h1 className="text-lg font-semibold md:text-xl">
@@ -107,6 +108,9 @@ function AppLayoutContent() {
             </div>
           )}
         </main>
+        <footer className="py-4 px-6 border-t bg-background/80 backdrop-blur-sm text-center text-sm text-muted-foreground">
+          Made by: not-cmd
+        </footer>
       </SidebarInset>
     </SidebarProvider>
   );
@@ -114,7 +118,7 @@ function AppLayoutContent() {
 
 export default function AppLayout() {
   return (
-    <Suspense fallback={<div>Loading navigation...</div>}>
+    <Suspense fallback={<div className="flex h-screen w-screen items-center justify-center text-lg">Loading AlgoSim...</div>}>
       <AppLayoutContent />
     </Suspense>
   );
