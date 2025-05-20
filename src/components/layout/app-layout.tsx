@@ -109,7 +109,7 @@ function AppLayoutContent() {
           )}
         </main>
         <footer className="py-4 px-6 border-t bg-background/80 backdrop-blur-sm text-center text-sm text-muted-foreground">
-          Made by: not-cmd
+          Made by not-cmd &lt;Divyesh Medidi&gt;
         </footer>
       </SidebarInset>
     </SidebarProvider>
